@@ -81,6 +81,8 @@ function changeImgMain(_which) {
 }
 
 function changeImg(_which) {
+    cleanColorData()
+
     if (markStatus.marks.reduce((a, b) => a + b, 0) == markStatus.marks.length) {
         $('#finished').removeClass('hide');
         setTimeout(function () {
@@ -97,16 +99,22 @@ function changeImg(_which) {
 }
 
 $(document).keydown(function (event) {
+    // Delete
     if (event.keyCode == 46 && labelStage == 'rectify' && curLabelForm != null) {
         drawStack.remove(rectifyIdx);
         rectifyIdx = -1, curLabelForm = null;
         rectifyOperation();
     }
+    // <,
     if (event.keyCode == 188) {
         changeImg(-1);
-    } else if (event.keyCode == 190) {
+    }
+    // >.
+    else if (event.keyCode == 190) {
         changeImg(1);
-    } else if (event.keyCode == 32) {
+    }
+    // Space
+    else if (event.keyCode == 32) {
         changeImg(0);
     }
     var keyCode = String.fromCharCode(event.keyCode);
@@ -157,21 +165,10 @@ $.ctrl('Y', function () {
         runDraw();
     }
 });
+
+
 $.ctrl('S', function () {
-    var sendinfo = {
-        user: user,
-        imgid: imgpath.split('/')[1].split('.')[0],
-        marks: JSON.stringify(markStatus.marks),
-        labels: JSON.stringify(drawStack.stack)
-    };
-    $.post('/save', sendinfo, function (result) {
-        if (result.success) {
-            var savediv = $('#save');
-            drawSchedule(result.donelen, result.halflen, result.datalen);
-            savediv.removeClass('hide');
-            setTimeout(() => { savediv.addClass('hide'); }, 1000);
-        }
-    });
+    save()
 })
 
 function changebtn(btn) {
@@ -189,6 +186,13 @@ function changebtn(btn) {
 }
 
 $('#opbox').click(function () {
+    cleanColorData()
+
+    if($('#opbox').hasClass('btn-primary')){
+        cleanStatus('opbox')
+        return
+    }
+
     changebtn('opbox');
     labelStage = 'label';
     curLabelForm = new Box();
@@ -196,18 +200,34 @@ $('#opbox').click(function () {
     drawStack.runStack();
 });
 $('#oppoint').click(function () {
+    cleanColorData()
+
+    if($('#oppoint').hasClass('btn-primary')){
+        cleanStatus('oppoint')
+        return
+    }
+
     changebtn('oppoint');
     labelStage = 'label';
     curLabelForm = new Point();
     labelMouse();
     drawStack.runStack();
 });
-$('#oprectify').click(function () {
+$('#oprectify').click(function (e) {
+    if(labelStage === 'rectify'){
+        cleanStatus('oprectify')
+        return
+    }
+
     changebtn('oprectify');
     labelStage = 'rectify';
     rectifyMouse();
     curLabelForm = null;
 });
+
+function cleanColorData(){
+    document.getElementById('color-data').innerHTML = ''
+}
 
 /************ mouse event  *************/
 

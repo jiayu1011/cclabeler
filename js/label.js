@@ -89,7 +89,9 @@ function labelOperation(e = null, start = false) {
     drawStack.runStack();
     if (e == null) return;
     var loc = MousePos(e);
+    // Box
     if (curLabelForm.type[0] == 'B') {
+        // console.log('box')
         curLabelForm.ex = loc.x;
         curLabelForm.ey = loc.y;
         if (start) {
@@ -97,16 +99,19 @@ function labelOperation(e = null, start = false) {
             curLabelForm.sy = loc.y;
         }
     } else if (curLabelForm.type[0] == 'P') {
+        // console.log('point')
         curLabelForm.x = loc.x;
         curLabelForm.y = loc.y;
+        curLabelForm.colorData = targetColor
     }
+    // console.log(curLabelForm)
     if (labelStatus) {
         curLabelForm.draw();
     }
 }
 
 function labelStart(e) {
-    console.log(e.which);
+    // console.log(e.which);
     if (labelStatus || e.which == 3) return;
     labelStatus = true;
     labelOperation(e, true);
@@ -137,6 +142,7 @@ function labelMouse() {
 /****************** rectify *****************/
 
 function rectifyOperation(loc = null) {
+    // console.log(drawStack)
     drawStack.runStack();
     if (curLabelForm != null) {
         if(loc != null) {
@@ -175,6 +181,7 @@ function rectifyStart(e) {
         if(_rectifyIdx >= 0) {
             rectifyIdx = _rectifyIdx;
             curLabelForm = drawStack.label(rectifyIdx, true);
+
             rectifyOperation();
         }    
     }
@@ -196,10 +203,14 @@ function rectifyMove(e) {
 }
 
 function rectifyEnd(e) {
+    if(rectifyType===0 && curLabelForm && curLabelForm.type==='Point'){
+        showColorData()
+
+    }
     if(e.which == 3) return ;
     var loc = MousePos(e);
     if(curLabelForm != null) {
-        console.log(rectifyType, rectifyIdx);
+        // console.log(rectifyType, rectifyIdx);
         if (rectifyType > 0) {
             drawStack.insert(rectifyIdx, curLabelForm);
             rectifyOperation(loc);
@@ -213,3 +224,132 @@ function rectifyMouse() {
     canvas.onmousemove = rectifyMove;
     canvas.onmouseup = rectifyEnd;
 }
+
+function showColorData(){
+    let displayDiv = document.getElementById('color-data')
+        let color = code2color[curLabelForm.colorData]
+        let innerhtml = ''
+        for(let i=0;i<color.length;i++){
+            switch (color[i]){
+                case 'r':
+                    innerhtml += '<b style="color: red">R</b>'
+                    break
+                case 'g':
+                    innerhtml += '<b style="color: green">G</b>'
+                    break
+                case 'b':
+                    innerhtml += '<b style="color: blue">B</b>'
+                    break
+            }
+        }
+        displayDiv.innerHTML = innerhtml
+}
+
+function cleanStatus(curOpStatus){
+    let chosenBtn = $(`#${curOpStatus}`)
+    chosenBtn.removeClass('btn-primary')
+    chosenBtn.addClass('btn-info')
+    labelStage = null
+    curLabelForm = null
+    drawStack.runStack()
+    canvas.onmousemove = draw3Channels
+    canvas.onmousedown = null
+    canvas.onmouseup = null
+    cleanColorData()
+}
+
+/********* 3 channels **********/
+function calOriginalRectangle(pos){
+    originalRectangle.x = pos.x
+    originalRectangle.y = pos.y
+    originalWidth = channelWidth/scale
+    originalRectangle.width = originalWidth
+    originalRectangle.height = originalWidth
+}
+
+function draw3Channels(e){
+    let pos = MousePos(e)
+    calOriginalRectangle(pos)
+
+    ctx.drawImage(
+            canvas,
+            originalRectangle.x-originalWidth/2,// sx
+            originalRectangle.y-originalWidth/2,// sy
+            originalWidth,// swidth
+            originalWidth,// sheight
+            RChannel.x,
+            RChannel.y,
+            RChannel.width,
+            RChannel.height
+        )
+    ctx.drawImage(
+        canvas,
+        originalRectangle.x-originalWidth/2,// sx
+        originalRectangle.y-originalWidth/2,// sy
+        originalWidth,// swidth
+        originalWidth,// sheight
+        GChannel.x,
+        GChannel.y,
+        GChannel.width,
+        GChannel.height
+    )
+    ctx.drawImage(
+        canvas,
+        originalRectangle.x-originalWidth/2,// sx
+        originalRectangle.y-originalWidth/2,// sy
+        originalWidth,// swidth
+        originalWidth,// sheight
+        BChannel.x,
+        BChannel.y,
+        BChannel.width,
+        BChannel.height
+    )
+    let RImageData = ctx.getImageData(RChannel.x, RChannel.y, RChannel.width, RChannel.height)
+    let GImageData = ctx.getImageData(GChannel.x, GChannel.y, GChannel.width, GChannel.height)
+    let BImageData = ctx.getImageData(BChannel.x, BChannel.y, BChannel.width, BChannel.height)
+    // console.log(imageData)
+    let L = RImageData.data.length
+    for(let i=0;i<L;i+=4){
+        RImageData.data[i+1] = 0 // G -> 0
+        RImageData.data[i+2] = 0 // B -> 0
+
+        GImageData.data[i] = 0 // R -> 0
+        GImageData.data[i+2] = 0 // B -> 0
+
+        BImageData.data[i] = 0 // R -> 0
+        BImageData.data[i+1] = 0 // G -> 0
+    }
+
+    ctx.putImageData(RImageData, RChannel.x, RChannel.y)
+    ctx.putImageData(GImageData, GChannel.x, GChannel.y)
+    ctx.putImageData(BImageData, BChannel.x, BChannel.y)
+
+    // draw cross line
+    ctx.beginPath()
+    
+    ctx.moveTo((RChannel.x+RChannel.width)/2, RChannel.y)
+    ctx.lineTo((RChannel.x+RChannel.width)/2, RChannel.y+RChannel.height)
+    ctx.moveTo(RChannel.x, RChannel.y+(RChannel.height/2))
+    ctx.lineTo(RChannel.x+RChannel.width, RChannel.y+(RChannel.height/2))
+
+    ctx.moveTo((GChannel.x+GChannel.width)/2, GChannel.y)
+    ctx.lineTo((GChannel.x+GChannel.width)/2, GChannel.y+GChannel.height)
+    ctx.moveTo(GChannel.x, GChannel.y+(GChannel.height/2))
+    ctx.lineTo(GChannel.x+GChannel.width, GChannel.y+(GChannel.height/2))
+    
+    ctx.moveTo(BChannel.x+(BChannel.width/2), BChannel.y)
+    ctx.lineTo(BChannel.x+(BChannel.width/2), BChannel.y+BChannel.height)
+    ctx.moveTo(BChannel.x, BChannel.y+(BChannel.height/2))
+    ctx.lineTo(BChannel.x+BChannel.width, BChannel.y+(BChannel.height/2))
+    
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 1
+    ctx.stroke()
+
+
+
+
+
+}
+
+canvas.onmousemove = draw3Channels

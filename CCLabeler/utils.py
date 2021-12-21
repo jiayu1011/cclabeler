@@ -43,7 +43,7 @@ class Player():
         for label in labels:
             if len(label) == 4:
                 boxes.append(label)
-            elif len(label) == 2:
+            elif len(label) == 3:
                 points.append(label)
 
         with open(os.path.join(resdir, imgid + '.json'), 'w+') as f:

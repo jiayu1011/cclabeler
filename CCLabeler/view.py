@@ -46,6 +46,7 @@ def save(request, returnResponse=True):
     imgid = request.POST.get('imgid')
     marks = json.loads(request.POST.get('marks'))
     labels = json.loads(request.POST.get('labels'))
+    # print(marks, labels)
     player.save(imgid, labels, marks)
     if returnResponse:
         context = dict(

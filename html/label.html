@@ -13,6 +13,11 @@
     <link href="static/bootstrap-slider.min.css" rel="stylesheet">
     <script src="static/jquery.mousewheel.min.js"></script>
     <script type='text/javascript' src="static/bootstrap-slider.min.js"></script>
+    <style>
+        .target-color{
+            zoom: 180%;
+        }
+    </style>
     <title>label page</title>
 </head>
 
@@ -61,16 +66,88 @@
                 <button type="button" id="pc-green" class="btn btn-success"></button>
                 <button type="button" id="pc-orange" class="btn btn-warning"></button>
             </div>
+            <div class="col-sm-4" style="color:red;margin-top: 10px"><b>target color:(required)</b></div>
+            <div class="col-sm-8" style="margin-top: 10px;">
+                <input
+                        id="target-color-red"
+                        class="target-color"
+                        type="checkbox"
+                        checked
+                        value="red"
+                        onclick="setTargetColor(event)"
+                >
+                <label>Red</label>
+                <input
+                        id="target-color-green"
+                        class="target-color"
+                        type="checkbox"
+                        value="green"
+                        onclick="setTargetColor(event)"
+                >
+                <label>Green</label>
+                <input
+                        id="target-color-blue"
+                        class="target-color"
+                        type="checkbox"
+                        value="blue"
+                        onclick="setTargetColor(event)"
+                >
+                <label>Blue</label>
+            </div>
+            <div class="col-sm-4" style=""><b>color data:</b></div>
+            <b class="col-sm-8" id="color-data" style="font-size: 30px;"></b>
         </div>
         <div id="save" class="hide alert alert-success">SAVE SUCCESS</div>
         <div id="finished" class="hide alert alert-success">FINISHED</div>
         <div id="unfinished" class="hide alert alert-warning">UNFINISHED</div>
+
+
     </div>
     <div class="right">
         <canvas id="cvs" width="1440" height="900">
             悲剧了，你的浏览器不支持Canvas？！赶快换一个吧！！
         </canvas>
     </div>
+    <script>
+        var save = () => {
+            //console.log('markStatus: ', markStatus)
+            //console.log('drawStack: ', drawStack)
+            var sendinfo = {
+                user: user,
+                imgid: imgpath.split('/')[1].split('.')[0],
+                marks: JSON.stringify(markStatus.marks),
+                labels: JSON.stringify(drawStack.stack)
+            };
+            $.post('/save', sendinfo, function (result) {
+                if (result.success) {
+                    var savediv = $('#save');
+                    drawSchedule(result.donelen, result.halflen, result.datalen);
+                    savediv.removeClass('hide');
+                    setTimeout(() => { savediv.addClass('hide'); }, 1000);
+                }
+            });
+        }
+
+
+        function setTargetColor(e){
+            let isRedChecked = document.getElementById('target-color-red').checked
+            let isGreenChecked = document.getElementById('target-color-green').checked
+            let isBlueChecked = document.getElementById('target-color-blue').checked
+            let tempColor = ''
+            tempColor += isRedChecked? '1':'0'
+            tempColor += isGreenChecked? '1':'0'
+            tempColor += isBlueChecked? '1':'0'
+
+            // r(100), g(010), b(001), rg(110), rb(101), gb(011), rgb(111) 7种组合
+            targetColor = tempColor
+
+
+
+            //console.log(targetColor)
+        }
+
+
+    </script>
     <script>
         var user = "{{ user }}";
         var imgpath = "static/{{ imgid }}.jpg";
@@ -87,6 +164,8 @@
     <script src="static/global.js"></script>
     <script src="static/label.js"></script>
     <script src="static/button.js"></script>
+
+
 </body>
 
 </html>

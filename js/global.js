@@ -1,6 +1,27 @@
 /******************** glbal variable ****************/
 
 const treeDepth = 4;
+var targetColor = '100'
+var color2code = {
+    'r': '100',
+    'g': '010',
+    'b': '001',
+    'rg': '110',
+    'rb': '101',
+    'gb': '011',
+    'rgb': '111'
+}
+var code2color = {
+    '100': 'r',
+    '010': 'g',
+    '001': 'b',
+    '110': 'rg',
+    '101': 'rb',
+    '011': 'gb',
+    '111': 'rgb'
+}
+
+
 
 /****************** operation stack *****************/
 
@@ -121,6 +142,8 @@ var imgStatus = {
             drawRect(ctx, ox, 0, canvas.width - ox, oy, null, notmain, 1);
             drawRect(ctx, ox + cw, oy, canvas.width - ox - cw, ch, null, notmain, 1);
             drawRect(ctx, ox, oy + ch, canvas.width, canvas.height, null, notmain, 0);
+
+
         }
     },
     playW: function () { return this.scale * this.image.width; },
@@ -179,6 +202,8 @@ function MousePos(event, _canvas = canvas) {
     }
 }
 
+
+
 var labelStage = null;
 var labelStatus = false; // 0: no, 1: draw;
 var rectifyType = 0;
@@ -210,7 +235,7 @@ Box.prototype.draw = function (rectify = false) {
     var boxw = Math.abs(this.sx - this.ex);
     var boxh = Math.abs(this.sy - this.ey);
     drawRect(ctx, posx, posy, boxw, boxh, labelLineColor, null, labelLineWidth);
-    console.log('linecolor:', labelLineColor);
+    // console.log('linecolor:', labelLineColor);
     if (rectify) {
         ctx.save();
         ctx.setLineDash([5, 10]);
@@ -256,15 +281,19 @@ Box.prototype.nearby = function (x, y) {
     else return 0;
 }
 
-function Point(x = 0, y = 0) {
+// color data: r, g, b, rg, rb, gb, rgb
+
+function Point(x = 0, y = 0, colorData = '100') {
     this.x = x;
     this.y = y;
+    this.colorData = colorData
 }
 Point.prototype.clone = function () {
-    return new Point(this.x, this.y);
+    return new Point(this.x, this.y, this.colorData);
 }
 Point.prototype.cloneFrom = function (_point) {
     this.x = _point.x, this.y = _point.y;
+    this.colorData = _point.colorData
 }
 Point.prototype.type = 'Point';
 Point.prototype.draw = function (rectify = false) {
@@ -278,14 +307,16 @@ Point.prototype.draw = function (rectify = false) {
 Point.prototype.normalize = function (ix, iy, iw, ih) {
     var point = new Point(
         (this.x - ix) / iw,
-        (this.y - iy) / ih
+        (this.y - iy) / ih,
+        this.colorData
     )
     return point;
 }
 Point.prototype.unnormalize = function (ix, iy, iw, ih) {
     var point = new Point(
         this.x * iw + ix,
-        this.y * ih + iy
+        this.y * ih + iy,
+        this.colorData
     );
     return point;
 }
@@ -308,8 +339,9 @@ function DrawStack(_stack = null) {
     if (_stack != null) {
         for (var i = 0; i < _stack.length; i++) {
             var _label = _stack[i];
+            // console.log(_label)
             if(_label.sx == undefined) {
-                this.stack.push(new Point(_label.x, _label.y));
+                this.stack.push(new Point(_label.x, _label.y, _label.colorData));
             } else {
                 this.stack.push(new Box(_label.sx, _label.sy, _label.ex, _label.ey));
             }
@@ -402,6 +434,37 @@ function runDraw() {
         console.log("run");
         drawStack.runStack();
     }
+}
+
+
+/****** 3 channels ********/
+// 拆分通道放大倍数
+var scale = 8
+// 图片被放大区域的边长
+var originalWidth
+
+// 图片被放大区域
+var originalRectangle = {}
+
+// 拆分通道参数配置
+var channelWidth = 200
+var RChannel = {
+    x: 0,
+    y: 0,
+    width: channelWidth,
+    height: channelWidth
+}
+var GChannel = {
+    x: 0,
+    y: (canvas.height/2)-(channelWidth/2),
+    width: channelWidth,
+    height: channelWidth
+}
+var BChannel = {
+    x: 0,
+    y: canvas.height-channelWidth,
+    width: channelWidth,
+    height: channelWidth
 }
 
 window.onload = function () {
