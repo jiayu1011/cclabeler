@@ -135,7 +135,10 @@ function labelEnd(e) {
 }
 function labelMouse() {
     canvas.onmousedown = labelStart;
-    canvas.onmousemove = labelMove;
+    canvas.onmousemove = (e) => {
+        labelMove()
+        draw3Channels(e)
+    }
     canvas.onmouseup = labelEnd;
 }
 
@@ -221,7 +224,10 @@ function rectifyEnd(e) {
 
 function rectifyMouse() {
     canvas.onmousedown = rectifyStart;
-    canvas.onmousemove = rectifyMove;
+    canvas.onmousemove = (e) => {
+        rectifyMove()
+        draw3Channels(e)
+    }
     canvas.onmouseup = rectifyEnd;
 }
 
