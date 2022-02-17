@@ -137,7 +137,9 @@ function labelMouse() {
     canvas.onmousedown = labelStart;
     canvas.onmousemove = (e) => {
         labelMove()
-        draw3Channels(e)
+        if(is3ChannelsDisplayed){
+            draw3Channels(e)
+        }
     }
     canvas.onmouseup = labelEnd;
 }
@@ -226,7 +228,10 @@ function rectifyMouse() {
     canvas.onmousedown = rectifyStart;
     canvas.onmousemove = (e) => {
         rectifyMove()
-        draw3Channels(e)
+        if(is3ChannelsDisplayed){
+            draw3Channels(e)
+        }
+
     }
     canvas.onmouseup = rectifyEnd;
 }
@@ -258,7 +263,7 @@ function cleanStatus(curOpStatus){
     labelStage = null
     curLabelForm = null
     drawStack.runStack()
-    canvas.onmousemove = draw3Channels
+    canvas.onmousemove = null
     canvas.onmousedown = null
     canvas.onmouseup = null
     cleanColorData()
@@ -358,4 +363,3 @@ function draw3Channels(e){
 
 }
 
-canvas.onmousemove = draw3Channels

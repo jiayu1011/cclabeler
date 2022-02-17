@@ -17,6 +17,28 @@
         .target-color{
             zoom: 180%;
         }
+
+        .switch{
+            width:66px;
+            height:36px;
+            padding:3px;
+            border-radius: 30px;
+            -webkit-border-radius:30px;
+            -moz-border-radius:30px;
+            background-color: #838383;
+            position: relative;
+            margin-bottom: 5px;
+        }
+
+        .switch .channelsBtn{
+            width:30px;
+            height:30px;
+            -webkit-border-radius:30px;
+            -moz-border-radius:30px;
+            border-radius:30px;
+            background-color: #fff;
+            position: absolute;
+        }
     </style>
     <title>label page</title>
 </head>
@@ -96,6 +118,7 @@
             </div>
             <div class="col-sm-4" style=""><b>color data:</b></div>
             <b class="col-sm-8" id="color-data" style="font-size: 30px;"></b>
+
         </div>
         <div id="save" class="hide alert alert-success">SAVE SUCCESS</div>
         <div id="finished" class="hide alert alert-success">FINISHED</div>
@@ -103,11 +126,20 @@
 
 
     </div>
+
     <div class="right">
+        <div>
+            <div style="font-size: 20px;font-weight:600;text-align: start;">Is 3 Channels Shown?</div>
+            <div class="switch">
+                <div class="channelsBtn"></div>
+            </div>
+        </div>
         <canvas id="cvs" width="1440" height="900">
             悲剧了，你的浏览器不支持Canvas？！赶快换一个吧！！
         </canvas>
     </div>
+
+
     <script>
         var save = () => {
             //console.log('markStatus: ', markStatus)
@@ -164,6 +196,26 @@
     <script src="static/global.js"></script>
     <script src="static/label.js"></script>
     <script src="static/button.js"></script>
+
+    <script>
+            $(function(){
+                $('.channelsBtn').on('click',function(){
+                    if (!is3ChannelsDisplayed) {
+                        $(this).animate({left:'33px'});
+                        $(this).parent().css('background-color','green');
+
+                        is3ChannelsDisplayed = true
+                        canvas.onmousemove = draw3Channels
+                    } else {
+                        $(this).animate({left:'3px'});
+                        $(this).parent().css('background-color','#838383');
+
+                        is3ChannelsDisplayed = false
+                        cleanStatus()
+                    }
+                });
+            });
+    </script>
 
 
 </body>

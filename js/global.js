@@ -438,6 +438,7 @@ function runDraw() {
 
 
 /****** 3 channels ********/
+var is3ChannelsDisplayed = false
 // 拆分通道放大倍数
 var scale = 8
 // 图片被放大区域的边长
