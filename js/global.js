@@ -123,13 +123,41 @@ var imgStatus = {
     offsetx: 0,
     offsety: 0,
     scale: 0,
-    draw: function () {
+    draw: function (colorMask = 'ffffff') {
         drawRect(ctx, 0, 0, canvas.width, canvas.height, '#000', 'rgba(52, 73, 94, 1)', 1);
         if (this.image != null) {
             img = this.image;
-            ctx.drawImage(this.image,
-                0, 0, img.width, img.height,
-                this.offsetx, this.offsety, this.scale * img.width, this.scale * img.height);
+            ctx.drawImage(
+                this.image,
+                0,
+                0,
+                img.width,
+                img.height,
+                this.offsetx,
+                this.offsety,
+                this.scale * img.width,
+                this.scale * img.height
+            );
+
+            // Use color mask to redraw
+            let tempImageData = ctx.getImageData(
+                this.offsetx,
+                this.offsety,
+                this.scale * img.width,
+                this.scale * img.height
+            )
+            let L = tempImageData.data.length
+            // console.log(colorMask)
+            for(let i=0;i<L;i+=4){
+                // 2a mask:ff0000 ->
+                tempImageData.data[i] &= parseInt(colorMask.substring(0, 2), 16)
+                tempImageData.data[i+1] &= parseInt(colorMask.substring(2, 4), 16)
+                tempImageData.data[i+2] &= parseInt(colorMask.substring(4, 6), 16)
+            }
+
+            ctx.putImageData(tempImageData, this.offsetx, this.offsety)
+
+            // Draw mask
             var notmain = 'rgba(52, 73, 94, 0.6)';
             var cw = this.image.width << 1,
                 ch = this.image.height << 1,
@@ -398,7 +426,7 @@ DrawStack.prototype.topStack = function () {
 }
 DrawStack.prototype.runStack = function () {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    imgStatus.draw();
+    imgStatus.draw(colorMask);
     for (var i = 0; i < this.length(); i++) {
         var painter = this.label(i);
         var npainter = painter.unnormalize(...imgStatus.sizePara());
@@ -431,7 +459,7 @@ function runDraw() {
         }
         rectifyOperation();
     } else {
-        console.log("run");
+        // console.log("run");
         drawStack.runStack();
     }
 }
@@ -439,6 +467,11 @@ function runDraw() {
 
 /****** 3 channels ********/
 var is3ChannelsDisplayed = false
+var isRChannelOpen = true
+var isGChannelOpen = true
+var isBChannelOpen = true
+
+var colorMask = 'ffffff'
 // 拆分通道放大倍数
 var scale = 8
 // 图片被放大区域的边长

@@ -18,7 +18,7 @@
             zoom: 180%;
         }
 
-        .switch{
+        .switchClosed{
             width:66px;
             height:36px;
             padding:3px;
@@ -30,7 +30,19 @@
             margin-bottom: 5px;
         }
 
-        .switch .channelsBtn{
+        .switchOpen{
+            width:66px;
+            height:36px;
+            padding:3px;
+            border-radius: 30px;
+            -webkit-border-radius:30px;
+            -moz-border-radius:30px;
+            background-color: green;
+            position: relative;
+            margin-bottom: 5px;
+        }
+
+        .switchClosed .channelsBtnClosed{
             width:30px;
             height:30px;
             -webkit-border-radius:30px;
@@ -38,6 +50,17 @@
             border-radius:30px;
             background-color: #fff;
             position: absolute;
+        }
+
+        .switchOpen .channelsBtnOpen{
+            width:30px;
+            height:30px;
+            -webkit-border-radius:30px;
+            -moz-border-radius:30px;
+            border-radius:30px;
+            background-color: #fff;
+            position: absolute;
+            left: 33px;
         }
     </style>
     <title>label page</title>
@@ -124,16 +147,41 @@
         <div id="finished" class="hide alert alert-success">FINISHED</div>
         <div id="unfinished" class="hide alert alert-warning">UNFINISHED</div>
 
+        <div>
+            <div>
+                <div style="font-size: 20px;font-weight:600;text-align: start;">Are 3 Channels Shown?</div>
+                <div class="switchClosed">
+                    <div class="channelsBtnClosed" id="3ChannelsBtn"></div>
+                </div>
+            </div>
+            <div>
+                <div style="font-size: 20px;font-weight:600;text-align: start;">Are 3 Channels Open?</div>
+                <div style="display: flex;align-items: center;justify-content: start;">
+                    <span style="font-size: 20px;font-weight: 600;">R</span>
+                    <div class="switchOpen" style="display: inline-block;">
+                        <div class="channelsBtnOpen" id="RChannelBtn"></div>
+                    </div>
+                </div>
+                <div style="display: flex;align-items: center;justify-content: start;">
+                    <span style="font-size: 20px;font-weight: 600;">G</span>
+                    <div class="switchOpen" style="display: inline-block;">
+                        <div class="channelsBtnOpen" id="GChannelBtn"></div>
+                    </div>
+                </div>
+                <div style="display: flex;align-items: center;justify-content: start;">
+                    <span style="font-size: 20px;font-weight: 600;">B</span>
+                    <div class="switchOpen" style="display: inline-block;">
+                        <div class="channelsBtnOpen" id="BChannelBtn"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
 
     </div>
 
     <div class="right">
-        <div>
-            <div style="font-size: 20px;font-weight:600;text-align: start;">Is 3 Channels Shown?</div>
-            <div class="switch">
-                <div class="channelsBtn"></div>
-            </div>
-        </div>
+
         <canvas id="cvs" width="1440" height="900">
             悲剧了，你的浏览器不支持Canvas？！赶快换一个吧！！
         </canvas>
@@ -172,9 +220,6 @@
 
             // r(100), g(010), b(001), rg(110), rb(101), gb(011), rgb(111) 7种组合
             targetColor = tempColor
-
-
-
             //console.log(targetColor)
         }
 
@@ -196,10 +241,11 @@
     <script src="static/global.js"></script>
     <script src="static/label.js"></script>
     <script src="static/button.js"></script>
+    <script src="static/utils.js"></script>
 
     <script>
             $(function(){
-                $('.channelsBtn').on('click',function(){
+                $('#3ChannelsBtn').on('click',function(){
                     if (!is3ChannelsDisplayed) {
                         $(this).animate({left:'33px'});
                         $(this).parent().css('background-color','green');
@@ -213,6 +259,60 @@
                         is3ChannelsDisplayed = false
                         cleanStatus()
                     }
+                });
+                $('#RChannelBtn').on('click',function(){
+                    if (!isRChannelOpen) {
+                        $(this).animate({left:'33px'});
+                        $(this).parent().css('background-color','green');
+
+                        isRChannelOpen = true
+                        colorMask = pad0((parseInt(colorMask, 16)^0xff0000).toString(16), 6)
+                    } else {
+                        $(this).animate({left:'3px'});
+                        $(this).parent().css('background-color','#838383');
+
+                        isRChannelOpen = false
+                        colorMask = pad0((parseInt(colorMask, 16)&0x00ffff).toString(16), 6)
+                    }
+
+                    drawStack.runStack()
+
+                });
+                $('#GChannelBtn').on('click',function(){
+                    if (!isGChannelOpen) {
+                        $(this).animate({left:'33px'});
+                        $(this).parent().css('background-color','green');
+
+                        isGChannelOpen = true
+                        colorMask = pad0((parseInt(colorMask, 16)^0x00ff00).toString(16), 6)
+                    } else {
+                        $(this).animate({left:'3px'});
+                        $(this).parent().css('background-color','#838383');
+
+                        isGChannelOpen = false
+                        colorMask = pad0((parseInt(colorMask, 16)&0xff00ff).toString(16), 6)
+                    }
+
+                    drawStack.runStack()
+
+                });
+                $('#BChannelBtn').on('click',function(){
+                    if (!isBChannelOpen) {
+                        $(this).animate({left:'33px'});
+                        $(this).parent().css('background-color','green');
+
+                        isBChannelOpen = true
+                        colorMask = pad0((parseInt(colorMask, 16)^0x0000ff).toString(16), 6)
+                    } else {
+                        $(this).animate({left:'3px'});
+                        $(this).parent().css('background-color','#838383');
+
+                        isBChannelOpen = false
+                        colorMask = pad0((parseInt(colorMask, 16)&0xffff00).toString(16), 6)
+                    }
+
+                    drawStack.runStack()
+
                 });
             });
     </script>
